@@ -13,27 +13,26 @@ using System.Windows.Forms;
 namespace PulsenicsV3
 {
     internal class SQL_Engine
-    {
+    {   
+        /*First we declare all our needed SQL Variables in the class*/
         SqlConnection cnn;
         SqlCommand command;
         SqlDataReader dataReader;
         SqlDataAdapter adapter = new SqlDataAdapter();
+        
+        /*Function to establish a Sqlconnection to the database*/
         public SqlConnection GetDatabase()
         {
             string connectionString;
-            
-
             connectionString = @"Server=LAPTOP-IRJMG6J3\OFFICER;Database=pulsenics;Trusted_Connection=True; User ID=sa;Password=pulsenics; MultipleActiveResultSets=true";
-
             cnn = new SqlConnection(connectionString);
             return cnn;
         }
 
+        /*Initialize the app, read the chosen directory and add any new files to the db, also will check if the modified date in db matches modified date in the directory and update the db as necessary*/
         public string[] Initialize_App()
         {
             cnn = GetDatabase();
-            
-            
             string[] currentFilesList = System.IO.Directory.GetFiles(@"C:\Users\natha\Desktop\pulsenics");
             cnn.Open();
             foreach (String file in currentFilesList)
@@ -41,21 +40,25 @@ namespace PulsenicsV3
                 String creation = File.GetCreationTime(file).ToString();
                 String modified = File.GetLastWriteTime(file).ToString();
                 String getFileSql = "";
-                getFileSql = $"Select * from files where name = '{file}'";
+                getFileSql = $"Select * from files where name = @file";
+                SqlParameter[] param = new SqlParameter[3];
+                param[0] = new SqlParameter("@file", file);
                 command = new SqlCommand(getFileSql, cnn);
+                command.Parameters.Add(param[0]);
                 dataReader = command.ExecuteReader();
                 if (dataReader.HasRows)
                 {
                     while (dataReader.Read())
                     {
-      
-                        String dbCreated = dataReader.GetValue(2).ToString();
+                        
                         String dbModified = dataReader.GetValue(3).ToString();
                         if(dbModified != modified)
                         {
                             Console.WriteLine("Modified date out of sync with database, updating...");
-                            String updateSql = $"Update files set modified='{modified}' where name='{file}'";
+                            String updateSql = $"Update files set modified='{modified}' where name=@file";
                             command = new SqlCommand(updateSql, cnn);
+                            param[1] = new SqlParameter("@file", file);
+                            command.Parameters.Add(param[1]);
                             adapter.UpdateCommand = command;
                             adapter.UpdateCommand.ExecuteNonQuery();
                             Console.WriteLine("Updated Database");
@@ -66,8 +69,10 @@ namespace PulsenicsV3
                 else
                 {  
                     String insertFileSql = "";
-                    insertFileSql = $"Insert into files (name,created,modified) VALUES ('{file}','{creation}','{modified}')";
+                    insertFileSql = $"Insert into files (name,created,modified) VALUES (@file,'{creation}','{modified}')";
                     command = new SqlCommand(insertFileSql, cnn);
+                    param[2] = new SqlParameter("@file", file);
+                    command.Parameters.Add(param[2]);
                     adapter.InsertCommand = command;
                     adapter.InsertCommand.ExecuteNonQuery();
                     command.Dispose();

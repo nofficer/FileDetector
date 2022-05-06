@@ -64,7 +64,6 @@ namespace PulsenicsV3
             filesList.EndUpdate();
             filesList.SelectedIndexChanged += new EventHandler(selectedFileChanged);
 
-
             this.searchBox = new System.Windows.Forms.TextBox();
             this.searchLabel = new System.Windows.Forms.Label();
             this.searchLabel.Text = "Search";
@@ -81,22 +80,18 @@ namespace PulsenicsV3
             this.NameBox.AcceptsTab = true;
             this.NameBox.Location = new System.Drawing.Point(600, 200);
             this.Controls.Add(this.NameBox);
-            /*      NameBox.TextChanged += new EventHandler(NameBox_TextChanged);*/
 
             this.EmailBox = new System.Windows.Forms.TextBox();
             this.EmailBox.AcceptsReturn = true;
             this.EmailBox.AcceptsTab = true;
             this.EmailBox.Location = new System.Drawing.Point(600, 250);
             this.Controls.Add(this.EmailBox);
-     /*       EmailBox.TextChanged += new EventHandler(EmailBox_TextChanged);*/
 
             this.PhoneBox = new System.Windows.Forms.TextBox();
             this.PhoneBox.AcceptsReturn = true;
             this.PhoneBox.AcceptsTab = true;
             this.PhoneBox.Location = new System.Drawing.Point(600, 300);
             this.Controls.Add(this.PhoneBox);
-           /* PhoneBox.TextChanged += new EventHandler(PhoneBox_TextChanged);*/
-
 
         }
 
@@ -113,16 +108,11 @@ namespace PulsenicsV3
                 {
                   filesList.Items.Add(name);
                 }
-
-                
             }
             filesList.EndUpdate();
 
 
         }
-
-   
-
         private void SubmitButton_Click(object sender, EventArgs e)
         {   
             String res = init.Submit_User(this.NameBox.Text, this.EmailBox.Text, this.PhoneBox.Text);
@@ -133,7 +123,6 @@ namespace PulsenicsV3
                 this.PhoneBox.Text = "";
             }
         }
-
         private void assignbutton_Click(object sender, EventArgs e)
         {
 
@@ -147,10 +136,8 @@ namespace PulsenicsV3
             else
             {
                 MessageBox.Show("Please ensure that you have selected a file and input a user");
-            };
-            
+            }; 
         }
-
         private void OnFileChanged(object sender, FileSystemEventArgs e)
         {
             
@@ -172,7 +159,6 @@ namespace PulsenicsV3
             {
                 return;
             }
-
             String selectedItem = filesList.SelectedItem.ToString();
             string[] res = init.Get_Assigned_Users(selectedItem);
             assignedUsersList.Size = new System.Drawing.Size(100, 100);
