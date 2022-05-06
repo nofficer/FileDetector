@@ -118,13 +118,13 @@ namespace PulsenicsV3
 
         private void SubmitButton_Click(object sender, EventArgs e)
         {
-            String res = init.Submit_User(this.NameBox.Text, this.EmailBox.Text, this.PhoneBox.Text);
+       /*     String res = init.Submit_User(this.NameBox.Text, this.EmailBox.Text, this.PhoneBox.Text);
             if (res == "Good")
             {
                 this.NameBox.Text = "";
                 this.EmailBox.Text = "";
                 this.PhoneBox.Text = "";
-            }
+            }*/
         }
 
         private void assignbutton_Click(object sender, EventArgs e)
