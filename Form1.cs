@@ -21,6 +21,9 @@ namespace PulsenicsV3
         private TextBox NameBox;
         private TextBox EmailBox;
         private TextBox PhoneBox;
+        private Label searchLabel;
+        ListBox assignedUsersList = new ListBox();
+        private Label assignedUsersLabel;
         public Form1()
         {
             InitializeComponent();
@@ -28,7 +31,6 @@ namespace PulsenicsV3
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
             /*Watches for changes in the files and runs OnFileChanged if a file does */
             var watcher = new FileSystemWatcher(@"C:\Users\natha\Desktop\pulsenics");
             watcher.NotifyFilter = NotifyFilters.Attributes
@@ -60,12 +62,17 @@ namespace PulsenicsV3
                 filesList.Items.Add(name);
             }
             filesList.EndUpdate();
+            filesList.SelectedIndexChanged += new EventHandler(selectedFileChanged);
 
 
             this.searchBox = new System.Windows.Forms.TextBox();
+            this.searchLabel = new System.Windows.Forms.Label();
+            this.searchLabel.Text = "Search";
             this.searchBox.AcceptsReturn = true;
             this.searchBox.AcceptsTab = true;
-            this.searchBox.Location = new System.Drawing.Point(400, 100);
+            this.searchBox.Location = new System.Drawing.Point(405, 100);
+            this.searchLabel.Location = new System.Drawing.Point(433, 70);
+            this.Controls.Add(this.searchLabel);
             this.Controls.Add(this.searchBox);
             searchBox.TextChanged += new EventHandler(searchBox_TextChanged);
 
@@ -117,14 +124,14 @@ namespace PulsenicsV3
    
 
         private void SubmitButton_Click(object sender, EventArgs e)
-        {
-       /*     String res = init.Submit_User(this.NameBox.Text, this.EmailBox.Text, this.PhoneBox.Text);
+        {   
+            String res = init.Submit_User(this.NameBox.Text, this.EmailBox.Text, this.PhoneBox.Text);
             if (res == "Good")
             {
                 this.NameBox.Text = "";
                 this.EmailBox.Text = "";
                 this.PhoneBox.Text = "";
-            }*/
+            }
         }
 
         private void assignbutton_Click(object sender, EventArgs e)
@@ -135,6 +142,7 @@ namespace PulsenicsV3
             {
                 String file = filesList.SelectedItem.ToString();
                 init.Assign_File(user, file);
+                usertoassignbox.Text = "";
             }
             else
             {
@@ -152,9 +160,35 @@ namespace PulsenicsV3
             }
             Console.WriteLine($"Changed: {e.FullPath}");
             string[] files = init.Initialize_App();
-           
+            
         }
 
+        private void selectedFileChanged(object sender, System.EventArgs e)
+        {
+            this.Controls.Remove(assignedUsersList);
+            this.Controls.Remove(assignedUsersLabel);
+            this.assignedUsersList.Items.Clear();
+            if(filesList.SelectedItem == null)
+            {
+                return;
+            }
 
+            String selectedItem = filesList.SelectedItem.ToString();
+            string[] res = init.Get_Assigned_Users(selectedItem);
+            assignedUsersList.Size = new System.Drawing.Size(100, 100);
+            assignedUsersList.Location = new System.Drawing.Point(405, 200);
+            this.Controls.Add(assignedUsersList);
+            this.assignedUsersLabel = new System.Windows.Forms.Label();
+            this.assignedUsersLabel.Text = "Assigned Users";
+            this.assignedUsersLabel.Location = new System.Drawing.Point(413, 180);
+            this.Controls.Add(assignedUsersLabel);
+            assignedUsersList.BeginUpdate();
+            foreach (String name in res)
+            {
+                assignedUsersList.Items.Add(name);
+            }
+            assignedUsersList.EndUpdate();
+
+        }
     }
 }

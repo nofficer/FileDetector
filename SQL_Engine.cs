@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace PulsenicsV3
 {
@@ -16,7 +17,7 @@ namespace PulsenicsV3
         SqlConnection cnn;
         SqlCommand command;
         SqlDataReader dataReader;
-
+        SqlDataAdapter adapter = new SqlDataAdapter();
         public SqlConnection GetDatabase()
         {
             string connectionString;
@@ -32,7 +33,7 @@ namespace PulsenicsV3
         {
             cnn = GetDatabase();
             
-            SqlDataAdapter adapter = new SqlDataAdapter();
+            
             string[] currentFilesList = System.IO.Directory.GetFiles(@"C:\Users\natha\Desktop\pulsenics");
             cnn.Open();
             foreach (String file in currentFilesList)
@@ -93,11 +94,76 @@ namespace PulsenicsV3
             }
             dataReader.Close();
             String newAssignedUsers = currentAssignedUsers + user +",";
-            Console.WriteLine(newAssignedUsers);
-
-
+            
+            String updateSql = $"Update files set users=@newAssignedUsers where name='{file}'";
+            command = new SqlCommand(updateSql, cnn);
+            SqlParameter[] param = new SqlParameter[1];
+            param[0] = new SqlParameter("@newAssignedUsers", newAssignedUsers);
+            command.Parameters.Add(param[0]);
+            adapter.UpdateCommand = command;
+            adapter.UpdateCommand.ExecuteNonQuery();
+            Console.WriteLine("Updated assigned users");
             cnn.Close();
-           
+            MessageBox.Show($"{file} assigned to {user}");
+
+        }
+
+        public String Submit_User(String name, String email, String phone)
+        {
+            if (name.Length > 0 & email.Length > 0 & phone.Length > 0)
+            {
+                cnn.Open();
+                String insertUserSql = "";
+                insertUserSql = $"Insert into users (name,email,phone) VALUES (@name,@email,@phone)";
+                command = new SqlCommand(insertUserSql, cnn);
+                SqlParameter[] param = new SqlParameter[3];
+                param[0] = new SqlParameter("@name", name);
+                param[1] = new SqlParameter("@email", email);
+                param[2] = new SqlParameter("@phone", phone);
+                command.Parameters.Add(param[0]);
+                command.Parameters.Add(param[1]);
+                command.Parameters.Add(param[2]);
+                adapter.InsertCommand = command;
+                try
+                {
+                    adapter.InsertCommand.ExecuteNonQuery();
+                }
+                catch (SqlException e)
+                {
+                    MessageBox.Show(e.ToString());
+                    return "Bad";
+                }
+                
+                command.Dispose();
+                cnn.Close();
+                MessageBox.Show($"{name} added to database");
+                return "Good";
+            }
+            else
+            {
+                MessageBox.Show($"Error adding {name} to database, please ensure Name, Email and Phone all have values");
+                return "Bad";
+            }
+        }
+
+        public string[] Get_Assigned_Users(String file)
+        {
+            cnn.Open();
+            String getAssignedUsersSql = $"Select users from files where name = '{file}'";
+            String assignedUsers = "";
+            command = new SqlCommand(getAssignedUsersSql, cnn);
+            dataReader = command.ExecuteReader();
+            while (dataReader.Read())
+            {
+                assignedUsers = assignedUsers + dataReader.GetValue(0).ToString();
+            }
+            dataReader.Close();
+            command.Dispose();
+            string[] assignedUsersList = assignedUsers.Split(',');
+            cnn.Close();
+            return assignedUsersList;
+            
+
         }
     }
 }
