@@ -15,6 +15,7 @@ namespace PulsenicsV3
 {
     public partial class Form1 : Form
     {
+        private delegate void SafeCallDelegate(ListBox filesList, string[] files);
         SQL_Engine init = new SQL_Engine();
         ListBox filesList = new ListBox();
         private TextBox searchBox;
@@ -29,8 +30,23 @@ namespace PulsenicsV3
             InitializeComponent();
         }
 
+        private void generateFilesList(ListBox filesList, string[] files)
+        {
+            filesList.Size = new System.Drawing.Size(300, 200);
+            filesList.Location = new System.Drawing.Point(100, 100);
+            this.Controls.Add(filesList);
+            filesList.Items.Clear();
+            filesList.BeginUpdate();
+            foreach (string name in files)
+            {
+                filesList.Items.Add(name);
+            }
+            filesList.EndUpdate();
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
+           
             /*Watches for changes in the files and runs OnFileChanged if a file does */
             var watcher = new FileSystemWatcher(@"C:\Users\natha\Desktop\pulsenics");
             watcher.NotifyFilter = NotifyFilters.Attributes
@@ -50,49 +66,32 @@ namespace PulsenicsV3
              * then it will also check if the files have been modified since the app last initialized
              if they have been modified since then it will update the db with the new modified date*/
             string[] files = init.Initialize_App();
-
-
-            
-            filesList.Size = new System.Drawing.Size(300, 200);
-            filesList.Location = new System.Drawing.Point(100, 100);
-            this.Controls.Add(filesList);
-            filesList.BeginUpdate();
-            foreach (string name in files)
-            {
-                filesList.Items.Add(name);
-            }
-            filesList.EndUpdate();
+            generateFilesList(filesList, files);
             filesList.SelectedIndexChanged += new EventHandler(selectedFileChanged);
+            generateLabel(433, 70, searchLabel, "Search");
+            generateTextBox(405, 100, searchBox).TextChanged += new EventHandler(searchBox_TextChanged);
+            generateTextBox(600, 200, NameBox);
+            generateTextBox(600, 250, EmailBox);
+            generateTextBox(600, 300, PhoneBox);
+        }
 
-            this.searchBox = new System.Windows.Forms.TextBox();
-            this.searchLabel = new System.Windows.Forms.Label();
-            this.searchLabel.Text = "Search";
-            this.searchBox.AcceptsReturn = true;
-            this.searchBox.AcceptsTab = true;
-            this.searchBox.Location = new System.Drawing.Point(405, 100);
-            this.searchLabel.Location = new System.Drawing.Point(433, 70);
-            this.Controls.Add(this.searchLabel);
-            this.Controls.Add(this.searchBox);
-            searchBox.TextChanged += new EventHandler(searchBox_TextChanged);
+        private TextBox generateTextBox(int xcoord, int ycoord, TextBox boxname)
+        {
+            boxname = new System.Windows.Forms.TextBox();
+            boxname.AcceptsReturn = true;
+            boxname.AcceptsTab = true;
+            boxname.Location = new System.Drawing.Point(xcoord, ycoord);
+            this.Controls.Add(boxname);
+            return boxname;
+        }
 
-            this.NameBox = new System.Windows.Forms.TextBox();
-            this.NameBox.AcceptsReturn = true;
-            this.NameBox.AcceptsTab = true;
-            this.NameBox.Location = new System.Drawing.Point(600, 200);
-            this.Controls.Add(this.NameBox);
-
-            this.EmailBox = new System.Windows.Forms.TextBox();
-            this.EmailBox.AcceptsReturn = true;
-            this.EmailBox.AcceptsTab = true;
-            this.EmailBox.Location = new System.Drawing.Point(600, 250);
-            this.Controls.Add(this.EmailBox);
-
-            this.PhoneBox = new System.Windows.Forms.TextBox();
-            this.PhoneBox.AcceptsReturn = true;
-            this.PhoneBox.AcceptsTab = true;
-            this.PhoneBox.Location = new System.Drawing.Point(600, 300);
-            this.Controls.Add(this.PhoneBox);
-
+        private Label generateLabel(int xcoord, int ycoord, Label labelname, String text)
+        {
+            labelname = new System.Windows.Forms.Label();
+            labelname.Location = new System.Drawing.Point(xcoord, ycoord);
+            labelname.Text = text;
+            this.Controls.Add(labelname);
+            return labelname;
         }
 
         private void searchBox_TextChanged(object sender, EventArgs e)
@@ -147,7 +146,18 @@ namespace PulsenicsV3
             }
             Console.WriteLine($"Changed: {e.FullPath}");
             string[] files = init.Initialize_App();
+            /*This stuff happens in another thread so I have to call it safely via a delegate*/
+            if (filesList.InvokeRequired)
+            {
+                var d = new SafeCallDelegate(generateFilesList);
+                filesList.Invoke(d, new object[] { filesList, files });
+            }
+
             
+
+
+
+
         }
 
         private void selectedFileChanged(object sender, System.EventArgs e)
