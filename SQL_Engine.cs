@@ -86,6 +86,7 @@ namespace PulsenicsV3
             return currentFilesList;
         }
 
+        /*Assign a file to a specified user based on user text input*/
         public void Assign_File(String user, String file)
         {
             cnn.Open();
@@ -113,6 +114,7 @@ namespace PulsenicsV3
 
         }
 
+        /*Saves a submitted user to the database*/
         public String Submit_User(String name, String email, String phone)
         {
             if (name.Length > 0 & email.Length > 0 & phone.Length > 0)
@@ -151,6 +153,7 @@ namespace PulsenicsV3
             }
         }
 
+        /*Gets all the users assigned to a particular file*/
         public string[] Get_Assigned_Users(String file)
         {
             cnn.Open();

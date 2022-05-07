@@ -69,10 +69,11 @@ namespace PulsenicsV3
             generateFilesList(filesList, files);
             filesList.SelectedIndexChanged += new EventHandler(selectedFileChanged);
             generateLabel(433, 70, searchLabel, "Search");
-            generateTextBox(405, 100, searchBox).TextChanged += new EventHandler(searchBox_TextChanged);
-            generateTextBox(600, 200, NameBox);
-            generateTextBox(600, 250, EmailBox);
-            generateTextBox(600, 300, PhoneBox);
+            searchBox = generateTextBox(405, 100, searchBox);
+            searchBox.TextChanged += new EventHandler(searchBox_TextChanged);
+            NameBox = generateTextBox(600, 200, NameBox);
+            EmailBox = generateTextBox(600, 250, EmailBox);
+            PhoneBox = generateTextBox(600, 300, PhoneBox);
         }
 
         private TextBox generateTextBox(int xcoord, int ycoord, TextBox boxname)
@@ -114,7 +115,7 @@ namespace PulsenicsV3
         }
         private void SubmitButton_Click(object sender, EventArgs e)
         {   
-            String res = init.Submit_User(this.NameBox.Text, this.EmailBox.Text, this.PhoneBox.Text);
+            String res = init.Submit_User(NameBox.Text, EmailBox.Text, PhoneBox.Text);
             if (res == "Good")
             {
                 this.NameBox.Text = "";
@@ -131,6 +132,8 @@ namespace PulsenicsV3
                 String file = filesList.SelectedItem.ToString();
                 init.Assign_File(user, file);
                 usertoassignbox.Text = "";
+                String selectedItem = filesList.SelectedItem.ToString();
+                updateAssignedUsersList(selectedItem);
             }
             else
             {
@@ -153,11 +156,6 @@ namespace PulsenicsV3
                 filesList.Invoke(d, new object[] { filesList, files });
             }
 
-            
-
-
-
-
         }
 
         private void selectedFileChanged(object sender, System.EventArgs e)
@@ -170,15 +168,23 @@ namespace PulsenicsV3
                 return;
             }
             String selectedItem = filesList.SelectedItem.ToString();
+            updateAssignedUsersList(selectedItem);
+
+        }
+
+        
+        private void updateAssignedUsersList(String selectedItem)
+        {
             string[] res = init.Get_Assigned_Users(selectedItem);
             assignedUsersList.Size = new System.Drawing.Size(100, 100);
             assignedUsersList.Location = new System.Drawing.Point(405, 200);
             this.Controls.Add(assignedUsersList);
             this.assignedUsersLabel = new System.Windows.Forms.Label();
             this.assignedUsersLabel.Text = "Assigned Users";
-            this.assignedUsersLabel.Location = new System.Drawing.Point(413, 180);
+            this.assignedUsersLabel.Location = new System.Drawing.Point(413, 170);
             this.Controls.Add(assignedUsersLabel);
             assignedUsersList.BeginUpdate();
+            assignedUsersList.Items.Clear();
             foreach (String name in res)
             {
                 assignedUsersList.Items.Add(name);
